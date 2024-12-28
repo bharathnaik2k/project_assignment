@@ -47,20 +47,29 @@ class _HomePageState extends State<HomePage> {
       lclCheckBox = false;
 
   //
-  dynamic apiCall(String input, bool type) {
-    Future<dynamic> apiCall() async {
-      String url =
-          "http://universities.hipolabs.com/search?name=$input&limit=20";
-      dynamic uri = Uri.parse(url);
-      dynamic response = await http.get(uri);
-      dynamic decode = jsonDecode(response.body);
-      dynamic names = decode.map((university) => university['name']).toList();
-      setState(() {
-        type == true ? originSerachData = names : destinationSerachData = names;
-      });
-    }
 
-    return apiCall();
+  Future<dynamic> originSerachAPIdata(String input) async {
+    String url = "http://universities.hipolabs.com/search?name=$input&limit=20";
+    dynamic uri = Uri.parse(url);
+    dynamic response = await http.get(uri);
+    dynamic decode = jsonDecode(response.body);
+    dynamic names = decode.map((university) => university['name']).toList();
+    setState(() {
+      print(names);
+      originSerachData = names;
+    });
+  }
+
+  Future<dynamic> destinationSerachAPIdata(String input) async {
+    String url = "http://universities.hipolabs.com/search?name=$input&limit=20";
+    dynamic uri = Uri.parse(url);
+    dynamic response = await http.get(uri);
+    dynamic decode = jsonDecode(response.body);
+    dynamic names = decode.map((university) => university['name']).toList();
+    setState(() {
+      print(names);
+      destinationSerachData = names;
+    });
   }
 
   @override
@@ -92,18 +101,104 @@ class _HomePageState extends State<HomePage> {
                 width: double.infinity,
                 child: Row(
                   children: [
-                    autoCompleteSerach(
-                      originInput,
-                      originSerachData,
-                      "Origin",
-                      apiCall(originInput.text, true),
+                    Expanded(
+                      child: TypeAheadField(
+                        controller: originInput,
+                        itemBuilder: (context, value) {
+                          return Text(
+                            value.toString(),
+                          );
+                        },
+                        onSelected: (v) {
+                          originInput.text = v;
+                        },
+                        debounceDuration: const Duration(milliseconds: 500),
+                        suggestionsCallback: (search) async {
+                          if (originInput.text.isEmpty) {
+                            return null;
+                          }
+                          await originSerachAPIdata(originInput.text);
+                          return originSerachData.where((element) {
+                            return element
+                                .toLowerCase()
+                                .contains(search.toLowerCase());
+                          }).toList();
+                        },
+                        builder: (context, controller, focusNode) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            autofocus: false,
+                            decoration: InputDecoration(
+                              contentPadding:
+                                  const EdgeInsets.only(right: 15, left: 15),
+                              prefixIconConstraints: BoxConstraints.tight(
+                                const Size(35, 35),
+                              ),
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset(
+                                  "assets/image/location.png",
+                                ),
+                              ),
+                              hintText: "Origin",
+                              border: OutlineInputBorder(
+                                  borderSide: const BorderSide(width: 1),
+                                  borderRadius: BorderRadius.circular(8.0)),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                     const SizedBox(width: 15),
-                    autoCompleteSerach(
-                      destinationInput,
-                      destinationSerachData,
-                      "Deriction",
-                      apiCall(destinationInput.text, false),
+                    Expanded(
+                      child: TypeAheadField(
+                        controller: destinationInput,
+                        itemBuilder: (context, value) {
+                          return Text(
+                            value.toString(),
+                          );
+                        },
+                        onSelected: (v) {
+                          destinationInput.text = v;
+                        },
+                        debounceDuration: const Duration(milliseconds: 500),
+                        suggestionsCallback: (search) async {
+                          if (destinationInput.text.isEmpty) {
+                            return null;
+                          }
+                          await destinationSerachAPIdata(destinationInput.text);
+                          return destinationSerachData.where((element) {
+                            return element
+                                .toLowerCase()
+                                .contains(search.toLowerCase());
+                          }).toList();
+                        },
+                        builder: (context, controller, focusNode) {
+                          return TextField(
+                            controller: controller,
+                            focusNode: focusNode,
+                            autofocus: false,
+                            decoration: InputDecoration(
+                              contentPadding:
+                                  const EdgeInsets.only(right: 15, left: 15),
+                              prefixIconConstraints: BoxConstraints.tight(
+                                const Size(35, 35),
+                              ),
+                              prefixIcon: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Image.asset(
+                                  "assets/image/location.png",
+                                ),
+                              ),
+                              hintText: "Destination",
+                              border: OutlineInputBorder(
+                                  borderSide: const BorderSide(width: 1),
+                                  borderRadius: BorderRadius.circular(8.0)),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -202,7 +297,6 @@ class _HomePageState extends State<HomePage> {
                             : const Icon(Icons.keyboard_arrow_down_rounded),
                         padding: const EdgeInsets.only(right: 8, left: 8),
                         isExpanded: true,
-                       
                         underline: const SizedBox(),
                         hint: Text(getDataPayTypeDropDownText),
                         items: getDataPayType.map((e) {
@@ -623,61 +717,6 @@ class _HomePageState extends State<HomePage> {
           width: MediaQuery.sizeOf(context).width * 0.01,
         )
       ],
-    );
-  }
-
-  //
-  Expanded autoCompleteSerach(
-    TextEditingController input,
-    List apiData,
-    String hintText,
-    dynamic apiFunCall,
-  ) {
-    return Expanded(
-      child: TypeAheadField(
-        controller: input,
-        itemBuilder: (context, value) {
-          return Text(
-            value.toString(),
-          );
-        },
-        onSelected: (v) {
-          input.text = v;
-        },
-        debounceDuration: const Duration(milliseconds: 500),
-        suggestionsCallback: (search) async {
-          if (input.text.isEmpty) {
-            return null;
-          }
-          await apiFunCall;
-          return apiData.where((element) {
-            return element.toLowerCase().contains(search.toLowerCase());
-          }).toList();
-        },
-        builder: (context, controller, focusNode) {
-          return TextField(
-            controller: controller,
-            focusNode: focusNode,
-            autofocus: false,
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.only(right: 15, left: 15),
-              prefixIconConstraints: BoxConstraints.tight(
-                const Size(35, 35),
-              ),
-              prefixIcon: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset(
-                  "assets/image/location.png",
-                ),
-              ),
-              hintText: hintText,
-              border: OutlineInputBorder(
-                  borderSide: const BorderSide(width: 1),
-                  borderRadius: BorderRadius.circular(8.0)),
-            ),
-          );
-        },
-      ),
     );
   }
 }
