@@ -55,7 +55,6 @@ class _HomePageState extends State<HomePage> {
     dynamic decode = jsonDecode(response.body);
     dynamic names = decode.map((university) => university['name']).toList();
     setState(() {
-      print(names);
       originSerachData = names;
     });
   }
@@ -67,7 +66,6 @@ class _HomePageState extends State<HomePage> {
     dynamic decode = jsonDecode(response.body);
     dynamic names = decode.map((university) => university['name']).toList();
     setState(() {
-      print(names);
       destinationSerachData = names;
     });
   }
