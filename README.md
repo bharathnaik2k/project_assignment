@@ -1,7 +1,7 @@
 # project_assignment
 Serach The Best Freight Rates Website
 
-## Iamge Preview
+## Image Preview
 <img src="https://github.com/bharathnaik2k/project_assignment/blob/main/previewImage.png"  />
 
 ## Video Preview
